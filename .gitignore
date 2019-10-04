@@ -1,0 +1,6 @@
+# Ignore all of the build output
+build
+
+# Ignore all of the Visual Studio Code workspace meta data
+.vscode
+*.code-workspace
