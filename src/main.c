@@ -12,7 +12,6 @@
 #include "font6x8.h"
 #include "ssd1306xled.h"
 #include "ssd1306xledtx.h"
-#include "ssd1306xledfx.h"
 
 #include "hx711.h"
 
@@ -36,7 +35,6 @@ int main(void)
 	_delay_ms(40);	// Small delay might be necessary if ssd1306_init is the first operation in the application.
 	ssd1306_init();
 	ssd1306tx_init(ssd1306xled_font6x8data, ' ');
-	// ssd1306fx_init();
 
 	ssd1306_clear();	// Clear the screen.
 
