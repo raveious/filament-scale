@@ -1,96 +1,67 @@
-/*
+/**
  * FilamentScale.c
  *
  * Created: 9/13/2019 4:31:23 PM
- * Author : Ian
+ * @author : Ian
  */ 
 
 #include <stdint.h>
 #include <avr/io.h>
 #include <util/delay.h>
 
+#include "font6x8.h"
 #include "ssd1306xled.h"
+#include "ssd1306xledtx.h"
+#include "ssd1306xledfx.h"
 
-//#
-//include "hx711.h"
-
+#include "hx711.h"
 
 #define TESTING_DELAY 500
 
-extern void ssd1306_start_data(void);	// Initiate transmission of data
-extern void ssd1306_data_byte(uint8_t);	// Transmission 1 byte of data
-extern void ssd1306_stop(void);			// Finish transmission
-
 int main(void)
 {
-	// HX711_init(128);
-	// HX711_set_scale(1.f);
-	// HX711_set_gain(128);
-	// HX711_tare(10);
+	// Initialize all of the control registers
 	
-	// DDRB =  0xFF;
-	// // DDRB |= (1 << PB0); // PB0 is an output
-	// PORTB = 0xAA;
-	
-    // while (1) 
-    // {
-	// 	// PORTB ^= (1 << PB0); // Toggle PB0
-	// 	PORTB ^= 0xFF;
-	// 	_delay_ms(250);
-    // }
+	DDRB  |= _BV(PB0) | _BV(PB2); // PB0 and PB2 as outputs
+	PORTB |= _BV(PB1);            // Enable internal pull-ups on PB1
+
+	// GIMSK = _BV(PCIE); // Enable global interrupts for PCIE (PB1 in this case)
+
+	HX711_init(128);
+	HX711_set_scale(1.f);
+	HX711_set_gain(128);
+	HX711_tare(10);
 
 	// ---- Initialization ----
 	_delay_ms(40);	// Small delay might be necessary if ssd1306_init is the first operation in the application.
 	ssd1306_init();
+	ssd1306tx_init(ssd1306xled_font6x8data, ' ');
+	// ssd1306fx_init();
 
-	// ---- Main Loop ----
+	ssd1306_clear();	// Clear the screen.
+
+	// NOTE: Screen width - 128, that is 21 symbols per row.
+
+	// ---- Print some text on the screen ----
+	ssd1306_setpos(2, 0);
+	ssd1306tx_string("0123456789ABCDEFGHIJK");
+	
+	ssd1306_setpos(2, 1);
+	ssd1306tx_string("A");
+	
+	ssd1306_setpos(2, 2);
+	ssd1306tx_string("B");
+	
+	ssd1306_setpos(2, 3);
+	ssd1306tx_string("C");
+
+	_delay_ms(TESTING_DELAY);
+
 	for (;;) {
-		ssd1306_clear();	// Clear the screen.
+		ssd1306_setpos(30, 2);
+		ssd1306tx_numdec((uint16_t)HX711_read());
 
-		// ---- Fill out screen with random bytes values ----
-		uint16_t r = 100;
-		ssd1306_setpos(0, 0);
-		ssd1306_start_data();	// Initiate transmission of data
-		for (uint16_t i = 0; i < 128 * 8; i++) {
-			// rand=(rand*109+89)%251; // Ref: https://www.avrfreaks.net/forum/random-number-generation-0
-			r = (r * 109 + 89) % 521; // Generate a pseudo random number. Linear congruential generator
-			ssd1306_data_byte(r);
-		}
-		ssd1306_stop();
-		_delay_ms(TESTING_DELAY);
-
-		// ---- Fill out screen with sequential bytes values ----
-		ssd1306_setpos(0, 0);
-		ssd1306_start_data();	// Initiate transmission of data
-		for (uint16_t i = 0; i < 128 * 8; i++) {
-			ssd1306_data_byte(i);
-		}
-		ssd1306_stop();
-		_delay_ms(TESTING_DELAY);
-
-		// ---- Fill out screen line by line ----
-		uint8_t p = 0xff;
-		for (uint8_t i = 0; i < 8; i++) {
-			p = (p >> 1);
-			ssd1306_fill(~p);
-		}
-		_delay_ms(TESTING_DELAY);
-
-		// ---- Fill out screen with patters ----
-		ssd1306_fill(0xAA);	// Horizontal lines
-		_delay_ms(TESTING_DELAY);
-		ssd1306_fill2(0XFF, 0x00);	// Vertical lines
-		_delay_ms(TESTING_DELAY);
-		ssd1306_fill2(0x55, 0xAA);	// Dots
-		_delay_ms(TESTING_DELAY);
-		ssd1306_fill4(0xCC, 0xCC, 0x33, 0x33);	// Small squares
-		_delay_ms(TESTING_DELAY);
-		ssd1306_fill4(0xC0, 0x30, 0x0C, 0x03);	// Slashes, sloping lines
-		_delay_ms(TESTING_DELAY);
-		ssd1306_fill4(0x30, 0xC0, 0x03, 0x0C);	// Slashes, sloping lines
-		_delay_ms(TESTING_DELAY);
-		ssd1306_fill(0XFF);	// Solid
-		_delay_ms(TESTING_DELAY);
+		_delay_ms(50);
 	}
 
 	return 0; // Return the mandatory result value. It is "0" for success.
