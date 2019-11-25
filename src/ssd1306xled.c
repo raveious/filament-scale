@@ -46,7 +46,11 @@ const uint8_t ssd1306_init_sequence [] PROGMEM = {	// Initialization Sequence
 	0x20, 0x00,		// Set Memory Addressing Mode - 00=Horizontal, 01=Vertical, 10=Page, 11=Invalid
 	0xA0 | 0x01,	// Set Segment Re-map
 	0xC8,			// Set COM Output Scan Direction
+#if DISPLAY_HEIGHT == 64
+	0xDA, 0x12,		// Set COM Pins Hardware Configuration - 128x32:0x02, 128x64:0x12
+#else
 	0xDA, 0x02,		// Set COM Pins Hardware Configuration - 128x32:0x02, 128x64:0x12
+#endif
 	0x81, 0x3F,		// Set contrast control register
 	0xD9, 0x22,		// Set pre-charge period (0x22 or 0xF1)
 	0xDB, 0x20,		// Set Vcomh Deselect Level - 0x00: 0.65 x VCC, 0x20: 0.77 x VCC (RESET), 0x30: 0.83 x VCC
@@ -55,7 +59,11 @@ const uint8_t ssd1306_init_sequence [] PROGMEM = {	// Initialization Sequence
 	0x2E,			// Deactivate Scroll command
 	0xAF,			// Set Display ON/OFF - AE=OFF, AF=ON
 	//
+#if DISPLAY_HEIGHT == 64
 	0x22, 0x00, 0x3f,	// Set Page Address (start,end)
+#else
+	0x22, 0x00, 0x1f,	// Set Page Address (start,end)
+#endif
 	0x21, 0x00,	0x7f,	// Set Column Address (start,end)
 	//
 	// 0xD6, 0x01,		// Set Zoom In, 0=disabled, 1=enabled
@@ -118,6 +126,9 @@ void i2csw_stop(void) {
 
 void i2csw_byte(uint8_t byte) {
 	uint8_t i;
+
+	/// TODO: Rewrite this to use the USI instead of bit-banging the interface
+
 	for (i = 0; i < 8; i++) {
 		if ((byte << i) & 0x80)
 			I2CSW_HIGH(SSD1306_SDA);
@@ -156,6 +167,8 @@ void ssd1306_stop(void) {
 // ============================================================================
 
 void ssd1306_init(void) {
+	/// TODO: This might want to init the USI registers for I2C instead of using the bit-banged interface
+
 	ssd1306_start_command();	// Initiate transmission of command
 	for (uint8_t i = 0; i < sizeof (ssd1306_init_sequence); i++) {
 		ssd1306_data_byte(pgm_read_byte(&ssd1306_init_sequence[i]));	// Send the command out
@@ -163,9 +176,23 @@ void ssd1306_init(void) {
 	ssd1306_stop();	// Finish transmission
 }
 
+
+// +--------------------->
+// | 0,0                 +X
+// |
+// |
+// |
+// |
+// |
+// V +Y
 void ssd1306_setpos(uint8_t x, uint8_t y) {
 	ssd1306_start_command();
+#if DISPLAY_HEIGHT == 64
 	ssd1306_data_byte(0xb0 | (y & 0x07));	// Set page start address
+#else
+	// For 128x32 px displays, just push the data on to the display buffer
+	ssd1306_data_byte(0xb0 | ((y + 4) & 0x07));	// Set page start address
+#endif
 	ssd1306_data_byte(x & 0x0f);			// Set the lower nibble of the column start address
 	ssd1306_data_byte(0x10 | (x >> 4));		// Set the higher nibble of the column start address
 	ssd1306_stop();	// Finish transmission

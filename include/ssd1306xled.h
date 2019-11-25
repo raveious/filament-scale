@@ -25,6 +25,9 @@
 
 #define SSD1306_SADDR	0x78  // Display IC2 slave address, default 0x78
 
+#define DISPLAY_WIDTH  128
+#define DISPLAY_HEIGHT 32
+
 // ----------------------------------------------------------------------------
 
 #define ssd1306_clear() ssd1306_fill4(0, 0, 0, 0)
