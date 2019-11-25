@@ -30,7 +30,7 @@ extern void ssd1306_stop(void);			// Finish transmission
 
 // ----------------------------------------------------------------------------
 
-void ssd1306_draw_bmp(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t bitmap[]) {
+void ssd1306fx_draw_bmp(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t bitmap[]) {
 	uint16_t j = 0;
 	uint8_t y;
 	if (y1 % 8 == 0) y = y1 / 8;

@@ -13,12 +13,12 @@
  *
  */
 
-#ifndef SSD1306XLED_H
-#define SSD1306XLED_H
+#ifndef SSD1306XLEDFX_H
+#define SSD1306XLEDFX_H
 
 // ============================================================================
 
-void ssd1306_draw_bmp(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t bitmap[]);
+void ssd1306fx_draw_bmp(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t bitmap[]);
 
 // ============================================================================
 
