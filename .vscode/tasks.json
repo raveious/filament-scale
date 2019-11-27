@@ -1,0 +1,65 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558 
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Make build output directory",
+            "command": "mkdir",
+            "args": [
+                "-p",
+                "${workspaceRoot}/build"
+            ],
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "Configure build",
+            "command": "cmake",
+            "args": [
+                "-DCMAKE_TOOLCHAIN_FILE=${workspaceRoot}/cmake/project-toolchain-config.cmake",
+                "-DCMAKE_BUILD_TYPE=Release",
+                "${workspaceRoot}"
+            ],
+            "options": {
+                "cwd": "${workspaceRoot}/build"
+            },
+            "dependsOn": "Make build output directory",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "Compile",
+            "command": "make",
+            "options": {
+                "cwd": "${workspaceRoot}/build"
+            },
+            "dependsOn": "Configure build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "Upload",
+            "command": "make",
+            "args": [
+                "upload_filament-scale"
+            ],
+            "options": {
+                "cwd": "${workspaceRoot}/build"
+            },
+            "dependsOn": "Compile",
+            "group": "none",
+            "problemMatcher": []
+        }
+    ]
+}
