@@ -22,12 +22,12 @@
 // NOTE: This implementation is borrowed from the LCDDDD library.
 // Original source code at: https://bitbucket.org/boyanov/avr/src/default/lcdddd/src/lcdddd/lcdddd.h
 
-uint8_t usint2decascii(uint16_t num, char *buffer)
+uint8_t usint2decascii(uint32_t num, char *buffer)
 {
-	const unsigned short powers[] = { 10000u, 1000u, 100u, 10u, 1u }; // The "const unsigned short" combination gives shortest code.
+	const uint32_t powers[] = { 1000000000u,  100000000u,  10000000u, 1000000u, 100000u, 10000u, 1000u, 100u, 10u, 1u }; // The "const unsigned short" combination gives shortest code.
 	char digit; // "digit" is stored in a char array, so it should be of type char.
 	uint8_t digits = USINT2DECASCII_MAX_DIGITS - 1;
-	for (uint8_t pos = 0; pos < 5; pos++) // "pos" is index in array, so should be of type int.
+	for (uint8_t pos = 0; pos < USINT2DECASCII_MAX_DIGITS; pos++) // "pos" is index in array, so should be of type int.
 	{
 		digit = 0;
 		while (num >= powers[pos])
@@ -78,8 +78,9 @@ uint8_t usint2decascii(uint16_t num, char *buffer)
 
 // ----------------------------------------------------------------------------
 
-uint8_t usint2hexascii(uint16_t num, char *buffer) {
-	for (int8_t pos = USINT2HEXASCII_MAX_DIGITS - 1; pos >= 0 ; pos--) { // "pos" is index in an array.
+uint8_t usint2hexascii(uint32_t num, char *buffer) {
+	int8_t pos = 0;
+	for (pos = USINT2HEXASCII_MAX_DIGITS - 1; pos >= 0 ; pos--) { // "pos" is index in an array.
 		char digit = num & 0x000f;
 		if (digit <= 9) {
 			buffer[pos] = digit + '0';	// Convert to ASCII
@@ -87,15 +88,18 @@ uint8_t usint2hexascii(uint16_t num, char *buffer) {
 			buffer[pos] = digit + 'A' - 10;	// Convert to ASCII
 		}
 		num = num >> 4;
+
+		if (num == 0)
+			break;
 	}
-	return 4;
+	return pos;
 }
 
 // ----------------------------------------------------------------------------
 
 // NOTE: The buffer should be always at least MAX_DIGITS in length - the function works with 16-bit numbers.
 
-uint8_t usint2binascii(uint16_t num, char *buffer) {
+uint8_t usint2binascii(uint32_t num, char *buffer) {
 	uint16_t power = 0x8000;	// This is the 1000 0000 0000 0000 binary number.
 	char digit; // "digit" is stored in a char array, so it should be of type char.
 	uint8_t digits = USINT2BINASCII_MAX_DIGITS - 1;

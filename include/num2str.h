@@ -24,15 +24,15 @@
 
 // ----------------------------------------------------------------------------
 
-#define USINT2DECASCII_MAX_DIGITS 5
-#define USINT2HEXASCII_MAX_DIGITS 4
-#define USINT2BINASCII_MAX_DIGITS 16
+#define USINT2DECASCII_MAX_DIGITS 10
+#define USINT2HEXASCII_MAX_DIGITS 8
+#define USINT2BINASCII_MAX_DIGITS 32
 
 // ----------------------------------------------------------------------------
 
-uint8_t usint2decascii(uint16_t, char *);
-uint8_t usint2hexascii(uint16_t, char *);
-uint8_t usint2binascii(uint16_t, char *);
+uint8_t usint2decascii(uint32_t, char *);
+uint8_t usint2hexascii(uint32_t, char *);
+uint8_t usint2binascii(uint32_t, char *);
 
 // ----------------------------------------------------------------------------
 

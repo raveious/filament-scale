@@ -32,10 +32,12 @@ void ssd1306tx_init(const uint8_t *fron_src, uint8_t char_base);
 void ssd1306tx_char(char ch);
 void ssd1306tx_string(char *s);
 
-void ssd1306tx_numdec(uint16_t num);
-void ssd1306tx_numdecp(uint16_t num);
+void ssd1306tx_numdec(uint32_t num);
+void ssd1306tx_numhex(uint32_t num);
+void ssd1306tx_numdecp(uint32_t num);
+void ssd1306tx_numhexp(uint32_t num);
 
-void ssd1306tx_stringxy(const uint8_t *fron_src, uint8_t x, uint8_t y, const char s[]);
+// void ssd1306tx_stringxy(const uint8_t *fron_src, uint8_t x, uint8_t y, const char s[]);
 
 // ============================================================================
 
