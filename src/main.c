@@ -7,59 +7,117 @@
 
 #include <stdint.h>
 #include <avr/io.h>
+#include <avr/eeprom.h>
 #include <util/delay.h>
 
 #include "font6x8.h"
 #include "ssd1306xled.h"
 #include "ssd1306xledtx.h"
 
+#include "num2str.h"
+
 #include "hx711.h"
 
-#define TESTING_DELAY 500
+#define CHANNEL_A HX711_GAIN_128_CH_A
+#define CHANNEL_B HX711_GAIN_32_CH_B
+
+#define TARE_SAMPLE_COUNT 10
+
+uint32_t EEMEM left_offset = 0;
+uint32_t EEMEM right_offset = 0;
+
+inline void tare(void)
+{
+	HX711_set_channel(CHANNEL_A);
+	HX711_tare(TARE_SAMPLE_COUNT); // Tare A (left)
+	eeprom_update_dword(&left_offset, HX711_get_offset(CHANNEL_A));
+
+	HX711_set_channel(CHANNEL_B);
+	HX711_tare(TARE_SAMPLE_COUNT); // Tare B (right)
+	eeprom_update_dword(&right_offset, HX711_get_offset(CHANNEL_B));
+}
 
 int main(void)
 {
+	uint32_t left_reading = 0;
+	uint32_t right_reading = 0;
+
 	// Initialize all of the control registers
 	
 	DDRB  |= _BV(PB0) | _BV(PB2); // PB0 and PB2 as outputs
-	PORTB |= _BV(PB1);            // Enable internal pull-ups on PB1
 
 	// GIMSK = _BV(PCIE); // Enable global interrupts for PCIE (PB1 in this case)
 
-	HX711_init(128);
-	HX711_set_scale(1.f);
-	HX711_set_gain(128);
-	HX711_tare(10);
+	eeprom_busy_wait();
+
+	// Couldn't figure out hot to get avr-gcc to get me a .eep file to program with avrdude
+	if (eeprom_read_dword(&left_offset) == 0xFFFFFFFF)
+		eeprom_write_dword(&left_offset, 0x0);
+		
+	if (eeprom_read_dword(&right_offset) == 0xFFFFFFFF)
+		eeprom_write_dword(&right_offset, 0x0);
+
+	_delay_ms(40);	// Small delay might be necessary if ssd1306_init is the first operation in the application.
 
 	// ---- Initialization ----
-	_delay_ms(40);	// Small delay might be necessary if ssd1306_init is the first operation in the application.
 	ssd1306_init();
 	ssd1306tx_init(ssd1306xled_font6x8data, ' ');
+	ssd1306_clear();	// Clear the screen.
+	
+	HX711_init(CHANNEL_A);
+	HX711_set_scale(CHANNEL_A, 1.f);
+	HX711_set_scale(CHANNEL_B, 1.f);
+
+	// Print the values from EEPROM onto the screen
+
+	HX711_set_offset(CHANNEL_A, eeprom_read_dword(&left_offset));
+	ssd1306_setpos(18, 1);
+	ssd1306tx_numdec(HX711_get_offset(CHANNEL_A));
+
+	HX711_set_offset(CHANNEL_B, eeprom_read_dword(&right_offset));
+	ssd1306_setpos(82, 1);
+	ssd1306tx_numdec(HX711_get_offset(CHANNEL_B));
+
+	// Put the software version onto the screen
+	ssd1306_setpos(24, 2);
+	ssd1306tx_string("Ver: ");
+	ssd1306tx_numhex(GIT_COMMIT_HASH);
+
+	_delay_ms(500);
 
 	ssd1306_clear();	// Clear the screen.
 
-	// NOTE: Screen width - 128, that is 21 symbols per row.
-
-	// ---- Print some text on the screen ----
-	ssd1306_setpos(2, 0);
-	ssd1306tx_string("0123456789ABCDEFGHIJK");
-	
-	ssd1306_setpos(2, 1);
-	ssd1306tx_string("A");
-	
-	ssd1306_setpos(2, 2);
-	ssd1306tx_string("B");
-	
-	ssd1306_setpos(2, 3);
-	ssd1306tx_string("C");
-
-	_delay_ms(TESTING_DELAY);
-
+	// NOTE: Screen width - 128, that is 21 symbols per row for the 6x8 font.
 	for (;;) {
-		ssd1306_setpos(30, 2);
-		ssd1306tx_numdec((uint16_t)HX711_read());
+		if ((PINB & _BV(PB1)) != 0)
+		{
+			ssd1306_setpos(52, 3);
+			ssd1306tx_string("TARE");
 
-		_delay_ms(50);
+			tare(); // Tare both channels
+			
+			// Clear the "TARE" off of the screen
+			ssd1306_setpos(52, 3);
+			ssd1306tx_string("    ");
+		}
+
+		HX711_set_channel(CHANNEL_A);
+		left_reading = HX711_get_value(3);
+		
+		HX711_set_channel(CHANNEL_B);
+		right_reading = HX711_get_value(3);
+
+		ssd1306_setpos(0, 1);
+		ssd1306tx_string("L:        ");
+		ssd1306_setpos(18, 1);
+		ssd1306tx_numdec(left_reading);
+
+		ssd1306_setpos(64, 1);
+		ssd1306tx_string("R:        ");;
+		ssd1306_setpos(82, 1);
+		ssd1306tx_numdec(right_reading);
+
+		_delay_ms(10);
 	}
 
 	return 0; // Return the mandatory result value. It is "0" for success.
