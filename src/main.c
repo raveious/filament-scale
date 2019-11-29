@@ -70,13 +70,13 @@ int main(void)
 
 	// Print the values from EEPROM onto the screen
 
-	HX711_set_offset(CHANNEL_A, eeprom_read_dword(&left_offset));
-	ssd1306_setpos(18, 1);
-	ssd1306tx_numdec(HX711_get_offset(CHANNEL_A));
+	// HX711_set_offset(CHANNEL_A, eeprom_read_dword(&left_offset));
+	// ssd1306_setpos(18, 1);
+	// ssd1306tx_numdec(HX711_get_offset(CHANNEL_A));
 
-	HX711_set_offset(CHANNEL_B, eeprom_read_dword(&right_offset));
-	ssd1306_setpos(82, 1);
-	ssd1306tx_numdec(HX711_get_offset(CHANNEL_B));
+	// HX711_set_offset(CHANNEL_B, eeprom_read_dword(&right_offset));
+	// ssd1306_setpos(82, 1);
+	// ssd1306tx_numdec(HX711_get_offset(CHANNEL_B));
 
 	// Put the software version onto the screen
 	ssd1306_setpos(24, 2);
