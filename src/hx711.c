@@ -22,10 +22,22 @@ void HX711_power_down();
 void HX711_power_up();
 uint8_t shiftIn(void);
 */
-void HX711_init(uint8_t gain)
+
+hx711_gain_t GAIN;		                    // amplification factor
+// double OFFSETS[HX711_GAIN_MAX_OPTIONS];	// used for tare weight
+int32_t OFFSETS[HX711_GAIN_MAX_OPTIONS];	// used for tare weight
+double SCALES[HX711_GAIN_MAX_OPTIONS];	    // used to return weight in grams, kg, ounces, whatever
+
+void HX711_init(hx711_gain_t gain)
 {
 	PD_SCK_SET_OUTPUT;
 	DOUT_SET_INPUT;
+
+	for (uint8_t i = 0; i < HX711_GAIN_MAX_OPTIONS; i++)
+	{
+		OFFSETS[i] = 0;
+		SCALES[i] = 0.0;
+	}
 
 	HX711_set_gain(gain);
 }
@@ -35,22 +47,13 @@ int HX711_is_ready(void)
 	return (DOUT_INPUT & (1 << DOUT_PIN)) == 0;
 }
 
-void HX711_set_gain(uint8_t gain)
+void HX711_set_gain(hx711_gain_t gain)
 {
-	switch (gain)
-	{
-		case 128:		// channel A, gain factor 128
-		GAIN = 1;
-		break;
-		case 64:		// channel A, gain factor 64
-		GAIN = 3;
-		break;
-		case 32:		// channel B, gain factor 32
-		GAIN = 2;
-		break;
-	}
+	GAIN = gain;
 
 	PD_SCK_SET_LOW;
+
+	// Do a reading, but we only really need it to clock the bus a few times to get the channel to change
 	HX711_read();
 }
 
@@ -59,39 +62,69 @@ uint32_t HX711_read(void)
 	// wait for the chip to become ready
 	while (!HX711_is_ready());
 
-	unsigned long count;
-	unsigned char i;
+	uint32_t count = 0;
+	uint8_t i = 0;
 	
 	DOUT_SET_HIGH;
-	
 	_delay_us(1);
-	
 	PD_SCK_SET_LOW;
 	_delay_us(1);
 	
-	count=0;
+	// Wait for the pin to be ready again
 	while(DOUT_READ);
-	for(i=0;i<24;i++)
+
+	// Read in the 24-bit value
+	for (i = 0; i < 24; i++)
 	{
 		PD_SCK_SET_HIGH;
+		
 		_delay_us(1);
-		count=count<<1;
+		
 		PD_SCK_SET_LOW;
+		
 		_delay_us(1);
+		
+		count <<= 1;
 		if(DOUT_READ)
-		count++;
+			count++;
 	}
-	count = count>>6;
-	PD_SCK_SET_HIGH;
-	_delay_us(1);
-	PD_SCK_SET_LOW;
-	_delay_us(1);
-	count ^= 0x800000;
-	return(count);
+	
+	// Set the gain for the next reading, because that settings is set afterwards??
+	// Adding 1 to gain as the lowest gain still needs 1 pulse.
+	for (i = 0; i < (GAIN + 1); i++)
+	{
+		PD_SCK_SET_HIGH;
+		
+		_delay_us(1);
+
+		PD_SCK_SET_LOW;
+		
+		_delay_us(1);
+	}
+	
+	count >>= 6;
+
+	// count ^= 0x800000;
+
+	// Ultra hack becuase, for some reason, channel A likes to have this weird offset, then rolls over?
+	// if ((GAIN == HX711_GAIN_128_CH_A ||
+	//      GAIN == HX711_GAIN_64_CH_A) &&
+	// 	 count > 0x3FD00)
+	// {
+	// 	count -= 0x3FD00;
+	// }
+	
+	// return (count >= 0x00FFFFFF ? 0x0 : count);
+	return count;
 }
 
 uint32_t HX711_read_average(uint8_t times)
 {
+	if (times <= 1)
+	{
+		return HX711_read();
+	}
+
 	uint32_t sum = 0;
 	for (uint8_t i = 0; i < times; i++)
 	{
@@ -101,40 +134,43 @@ uint32_t HX711_read_average(uint8_t times)
 	return sum / times;
 }
 
-double HX711_get_value(uint8_t times)
+uint32_t HX711_get_value(uint8_t times)
 {
-	return HX711_read_average(times) - OFFSET;
+	uint32_t avg = HX711_read_average(times);
+
+	// Add some level of protection for when the value read in is actually less than the offset
+	return (avg > HX711_get_offset(GAIN) ? (avg -  HX711_get_offset(GAIN)) : 0 );
+	// return (avg -  HX711_get_offset());
 }
 
-float HX711_get_units(uint8_t times)
+double HX711_get_units(uint8_t times)
 {
-	return HX711_get_value(times) / SCALE;
+	return HX711_get_value(times) / HX711_get_scale();
 }
 
 void HX711_tare(uint8_t times)
 {
-	double sum = HX711_read_average(times);
-	HX711_set_offset(sum);
+	HX711_set_offset(GAIN, HX711_read_average(times));
 }
 
-void HX711_set_scale(float scale)
+void HX711_set_scale(hx711_gain_t channel, double scale)
 {
-	SCALE = scale;
+	SCALES[channel] = scale;
 }
 
-float HX711_get_scale(void)
+double HX711_get_scale(void)
 {
-	return SCALE;
+	return SCALES[GAIN];
 }
 
-void HX711_set_offset(double offset)
+void HX711_set_offset(hx711_gain_t channel, int32_t offset)
 {
-	OFFSET = offset;
+	OFFSETS[channel] = offset;
 }
 
-double HX711_get_offset(void)
+int32_t HX711_get_offset(hx711_gain_t channel)
 {
-	return OFFSET;
+	return OFFSETS[channel];
 }
 
 void HX711_power_down(void)
