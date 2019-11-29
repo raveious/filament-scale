@@ -23,7 +23,7 @@
             "command": "cmake",
             "args": [
                 "-DCMAKE_TOOLCHAIN_FILE=${workspaceRoot}/cmake/project-toolchain-config.cmake",
-                "-DCMAKE_BUILD_TYPE=Release",
+                "-DCMAKE_BUILD_TYPE=MinSizeRel",
                 "${workspaceRoot}"
             ],
             "options": {
