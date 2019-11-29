@@ -34,6 +34,8 @@ void ssd1306tx_string(char *s);
 
 void ssd1306tx_numdec(uint32_t num);
 void ssd1306tx_numhex(uint32_t num);
+void ssd1306tx_double(double num, uint8_t decimal_point);
+
 void ssd1306tx_numdecp(uint32_t num);
 void ssd1306tx_numhexp(uint32_t num);
 

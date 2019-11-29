@@ -38,62 +38,6 @@ uint8_t ssd1306tx_font_char_base;
 
 // ----------------------------------------------------------------------------
 
-// inline void reverse(char* str, int len) 
-// { 
-//     int i = 0, j = len - 1, temp; 
-//     while (i < j) { 
-//         temp = str[i]; 
-//         str[i] = str[j]; 
-//         str[j] = temp; 
-//         i++; 
-//         j--; 
-//     } 
-// }
-
-// int intToStr(int x, char* str, int d) 
-// { 
-//     int i = 0; 
-//     while (x) { 
-//         str[i++] = (x % 10) + '0'; 
-//         x = x / 10; 
-//     } 
-  
-//     // If number of digits required is more, then 
-//     // add 0s at the beginning 
-//     while (i < d) 
-//         str[i++] = '0'; 
-  
-//     reverse(str, i); 
-//     str[i] = '\0'; 
-//     return i; 
-// }
-
-// void ftoa(float n, char* res, int afterpoint) 
-// { 
-//     // Extract integer part 
-//     int ipart = (int)n; 
-  
-//     // Extract floating part 
-//     float fpart = n - (float)ipart; 
-  
-//     // convert integer part to string 
-//     int i = intToStr(ipart, res, 0); 
-  
-//     // check for display option after point 
-//     if (afterpoint != 0) { 
-//         res[i] = '.'; // add dot 
-  
-//         // Get the value of fraction part upto given no. 
-//         // of points after dot. The third parameter  
-//         // is needed to handle cases like 233.007 
-//         fpart = fpart * pow(10, afterpoint); 
-  
-//         intToStr((int)fpart, res + i + 1, afterpoint); 
-//     } 
-// }
-
-// ----------------------------------------------------------------------------
-
 void ssd1306tx_init(const uint8_t *fron_src, uint8_t char_base) {
 	ssd1306tx_font_src = fron_src;
 	ssd1306tx_font_char_base = char_base;
@@ -136,6 +80,41 @@ void ssd1306tx_numhex(uint32_t num) {
 	ssd1306tx_string(ssd1306_numdec_buffer + digits);
 }
 
+void ssd1306tx_double(double num, uint8_t decimal_point)
+{
+    // Extract integer part 
+    int32_t ipart = (int)num;
+
+	// Extract floating part 
+	double fpart = num - ipart;
+	
+	if (ipart >= 0)
+	{
+		ssd1306tx_char('+');
+	}
+	else
+	{
+		ssd1306tx_char('-');
+		ipart = -ipart;
+	}
+
+	ssd1306tx_numdec((uint32_t)ipart);
+  
+    // check for display option after point 
+    if (decimal_point != 0) {
+
+		ssd1306tx_char('.');
+
+		uint32_t power = 1;
+		for (uint8_t i = 0; i < decimal_point; i++)
+			power *= 10;		
+
+		fpart *= power;
+
+        ssd1306tx_numdec((uint32_t)fpart);
+    }
+}
+
 void ssd1306tx_numdecp(uint32_t num) {
 	ssd1306_numdec_buffer[USINT2DECASCII_MAX_DIGITS] = '\0';   // Terminate the string.
 	for (uint8_t i = 0; i < USINT2DECASCII_MAX_DIGITS; i++)
@@ -153,32 +132,5 @@ void ssd1306tx_numhexp(uint32_t num) {
 	usint2hexascii(num, ssd1306_numdec_buffer);
 	ssd1306tx_string(ssd1306_numdec_buffer);
 }
-
-// ----------------------------------------------------------------------------
-
-// void ssd1306tx_stringxy(const uint8_t *fron_src, uint8_t x, uint8_t y, const char s[]) {
-// 	uint16_t j, k = 0;
-// 	while (s[k] != '\0') {
-// 		j = s[k] * 16 - (32 * 16); // Convert ASCII code to font data index. NOTE: (x*16) already optimized to (x<<4).
-// 		if (x > 120) {
-// 			x = 0;    // Go to the next line.
-// 			y++;
-// 		}
-// 		ssd1306_setpos(x, y);
-// 		ssd1306_start_data();
-// 		for (uint8_t i = 0; i < 8; i++) {
-// 			ssd1306_data_byte(pgm_read_byte(&fron_src[j + i]));
-// 		}
-// 		ssd1306_stop();
-// 		ssd1306_setpos(x, y + 1);
-// 		ssd1306_start_data();
-// 		for (uint8_t i = 0; i < 8; i++) {
-// 			ssd1306_data_byte(pgm_read_byte(&fron_src[j + i + 8]));
-// 		}
-// 		ssd1306_stop();
-// 		x += 8;
-// 		k++;
-// 	}
-// }
 
 // ============================================================================
