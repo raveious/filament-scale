@@ -50,7 +50,7 @@ int main(void)
 
 	eeprom_busy_wait();
 
-	// Couldn't figure out hot to get avr-gcc to get me a .eep file to program with avrdude
+	// Couldn't figure out how to get avr-gcc to get me a .eep file to program with avrdude
 	if (eeprom_read_dword(&left_offset) == 0xFFFFFFFF)
 		eeprom_write_dword(&left_offset, 0x0);
 		
