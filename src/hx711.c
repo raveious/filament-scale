@@ -24,7 +24,7 @@ uint8_t shiftIn(void);
 */
 
 hx711_gain_t CURRENT_CHANNEL;		        // Current selected channel
-const uint8_t[] AMP_FACTORS = {4, 2, 1};    // amplification factor
+const uint8_t AMP_FACTORS[] = {4, 2, 1};    // amplification factor
 // double OFFSETS[HX711_GAIN_MAX_OPTIONS];	// used for tare weight
 int32_t OFFSETS[HX711_GAIN_MAX_OPTIONS];	// used for tare weight
 double SCALES[HX711_GAIN_MAX_OPTIONS];	    // used to return weight in grams, kg, ounces, whatever
