@@ -65,7 +65,7 @@ int main(void)
 	ssd1306_clear();	// Clear the screen.
 	
 	HX711_init(CHANNEL_A);
-	HX711_set_scale(CHANNEL_A, 1.f);
+	HX711_set_scale(CHANNEL_A, 4.f);
 	HX711_set_scale(CHANNEL_B, 1.f);
 
 	// Print the values from EEPROM onto the screen
