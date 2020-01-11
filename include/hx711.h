@@ -26,8 +26,8 @@
 typedef enum
 {
     HX711_GAIN_128_CH_A = 0,
-    HX711_GAIN_32_CH_B,
     HX711_GAIN_64_CH_A,
+    HX711_GAIN_32_CH_B,
     HX711_GAIN_MAX_OPTIONS
 } hx711_gain_t;
 

@@ -23,7 +23,8 @@ void HX711_power_up();
 uint8_t shiftIn(void);
 */
 
-hx711_gain_t GAIN;		                    // amplification factor
+hx711_gain_t CURRENT_CHANNEL;		        // Current selected channel
+const uint8_t[] AMP_FACTORS = {4, 2, 1};    // amplification factor
 // double OFFSETS[HX711_GAIN_MAX_OPTIONS];	// used for tare weight
 int32_t OFFSETS[HX711_GAIN_MAX_OPTIONS];	// used for tare weight
 double SCALES[HX711_GAIN_MAX_OPTIONS];	    // used to return weight in grams, kg, ounces, whatever
@@ -49,7 +50,7 @@ int HX711_is_ready(void)
 
 void HX711_set_gain(hx711_gain_t gain)
 {
-	GAIN = gain;
+	CURRENT_CHANNEL = gain;
 
 	PD_SCK_SET_LOW;
 
@@ -91,7 +92,7 @@ uint32_t HX711_read(void)
 	
 	// Set the gain for the next reading, because that settings is set afterwards??
 	// Adding 1 to gain as the lowest gain still needs 1 pulse.
-	for (i = 0; i < (GAIN + 1); i++)
+	for (i = 0; i < (CURRENT_CHANNEL + 1); i++)
 	{
 		PD_SCK_SET_HIGH;
 		
@@ -107,8 +108,8 @@ uint32_t HX711_read(void)
 	// count ^= 0x800000;
 
 	// Ultra hack becuase, for some reason, channel A likes to have this weird offset, then rolls over?
-	// if ((GAIN == HX711_GAIN_128_CH_A ||
-	//      GAIN == HX711_GAIN_64_CH_A) &&
+	// if ((CURRENT_CHANNEL == HX711_GAIN_128_CH_A ||
+	//      CURRENT_CHANNEL == HX711_GAIN_64_CH_A) &&
 	// 	 count > 0x3FD00)
 	// {
 	// 	count -= 0x3FD00;
@@ -139,7 +140,7 @@ uint32_t HX711_get_value(uint8_t times)
 	uint32_t avg = HX711_read_average(times);
 
 	// Add some level of protection for when the value read in is actually less than the offset
-	return (avg > HX711_get_offset(GAIN) ? (avg -  HX711_get_offset(GAIN)) : 0 );
+	return (avg > HX711_get_offset(CURRENT_CHANNEL) ? ((avg -  HX711_get_offset(CURRENT_CHANNEL)) / AMP_FACTORS[CURRENT_CHANNEL]) : 0 );
 	// return (avg -  HX711_get_offset());
 }
 
@@ -150,7 +151,7 @@ double HX711_get_units(uint8_t times)
 
 void HX711_tare(uint8_t times)
 {
-	HX711_set_offset(GAIN, HX711_read_average(times));
+	HX711_set_offset(CURRENT_CHANNEL, HX711_read_average(times));
 }
 
 void HX711_set_scale(hx711_gain_t channel, double scale)
@@ -160,7 +161,7 @@ void HX711_set_scale(hx711_gain_t channel, double scale)
 
 double HX711_get_scale(void)
 {
-	return SCALES[GAIN];
+	return SCALES[CURRENT_CHANNEL];
 }
 
 void HX711_set_offset(hx711_gain_t channel, int32_t offset)
