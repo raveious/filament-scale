@@ -24,7 +24,7 @@ uint8_t shiftIn(void);
 */
 
 hx711_gain_t CURRENT_CHANNEL;		        // Current selected channel
-const uint8_t AMP_FACTORS[] = {4, 2, 1};    // amplification factor
+const uint8_t AMP_FACTORS[] = {4, 1, 2};    // amplification factor. Needs to match Table 3 from the data sheet.
 // double OFFSETS[HX711_GAIN_MAX_OPTIONS];	// used for tare weight
 int32_t OFFSETS[HX711_GAIN_MAX_OPTIONS];	// used for tare weight
 double SCALES[HX711_GAIN_MAX_OPTIONS];	    // used to return weight in grams, kg, ounces, whatever
@@ -141,6 +141,7 @@ uint32_t HX711_get_value(uint8_t times)
 
 	// Add some level of protection for when the value read in is actually less than the offset
 	return (avg > HX711_get_offset(CURRENT_CHANNEL) ? ((avg -  HX711_get_offset(CURRENT_CHANNEL)) / AMP_FACTORS[CURRENT_CHANNEL]) : 0 );
+	// return (avg > HX711_get_offset(CURRENT_CHANNEL) ? (avg -  HX711_get_offset(CURRENT_CHANNEL)) : 0 );
 	// return (avg -  HX711_get_offset());
 }
 
