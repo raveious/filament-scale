@@ -18,8 +18,8 @@
 
 #include "hx711.h"
 
-#define CHANNEL_A HX711_GAIN_128_CH_A
-#define CHANNEL_B HX711_GAIN_32_CH_B
+#define LEFT_CHANNEL  HX711_GAIN_128_CH_A
+#define RIGHT_CHANNEL HX711_GAIN_32_CH_B
 
 #define TARE_SAMPLE_COUNT 10
 
@@ -28,13 +28,13 @@ uint32_t EEMEM right_offset = 0;
 
 inline void tare(void)
 {
-	HX711_set_channel(CHANNEL_A);
+	HX711_set_channel(LEFT_CHANNEL);
 	HX711_tare(TARE_SAMPLE_COUNT); // Tare A (left)
-	eeprom_update_dword(&left_offset, HX711_get_offset(CHANNEL_A));
+	eeprom_update_dword(&left_offset, HX711_get_offset(LEFT_CHANNEL));
 
-	HX711_set_channel(CHANNEL_B);
+	HX711_set_channel(RIGHT_CHANNEL);
 	HX711_tare(TARE_SAMPLE_COUNT); // Tare B (right)
-	eeprom_update_dword(&right_offset, HX711_get_offset(CHANNEL_B));
+	eeprom_update_dword(&right_offset, HX711_get_offset(RIGHT_CHANNEL));
 }
 
 int main(void)
@@ -64,19 +64,19 @@ int main(void)
 	ssd1306tx_init(ssd1306xled_font6x8data, ' ');
 	ssd1306_clear();	// Clear the screen.
 	
-	HX711_init(CHANNEL_A);
-	HX711_set_scale(CHANNEL_A, 1.f);
-	HX711_set_scale(CHANNEL_B, 1.f);
+	HX711_init(LEFT_CHANNEL);
+	HX711_set_scale(LEFT_CHANNEL, 1.663101604278075); // grams
+	HX711_set_scale(RIGHT_CHANNEL, 1.70855614973262); // grams
 
 	// Print the values from EEPROM onto the screen
 
-	HX711_set_offset(CHANNEL_A, eeprom_read_dword(&left_offset));
+	HX711_set_offset(LEFT_CHANNEL, eeprom_read_dword(&left_offset));
 	// ssd1306_setpos(18, 1);
-	// ssd1306tx_numdec(HX711_get_offset(CHANNEL_A));
+	// ssd1306tx_numdec(HX711_get_offset(LEFT_CHANNEL));
 
-	HX711_set_offset(CHANNEL_B, eeprom_read_dword(&right_offset));
+	HX711_set_offset(RIGHT_CHANNEL, eeprom_read_dword(&right_offset));
 	// ssd1306_setpos(82, 1);
-	// ssd1306tx_numdec(HX711_get_offset(CHANNEL_B));
+	// ssd1306tx_numdec(HX711_get_offset(RIGHT_CHANNEL));
 
 	// Put the software version onto the screen
 	ssd1306_setpos(24, 2);
@@ -101,11 +101,11 @@ int main(void)
 			ssd1306tx_string("    ");
 		}
 
-		HX711_set_channel(CHANNEL_A);
-		left_reading = HX711_get_value(3);
+		HX711_set_channel(LEFT_CHANNEL);
+		left_reading = HX711_get_units(3);
 		
-		HX711_set_channel(CHANNEL_B);
-		right_reading = HX711_get_value(3);
+		HX711_set_channel(RIGHT_CHANNEL);
+		right_reading = HX711_get_units(3);
 
 		ssd1306_setpos(0, 1);
 		ssd1306tx_string("L:        ");
