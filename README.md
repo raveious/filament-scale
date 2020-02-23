@@ -3,6 +3,9 @@
 ## Building Software
 
 ```
+$ virtualenv -p python3 venv
+$ source ./venv/bin/activate
+$ pip install -r requirements.txt
 $ mkdir build
 $ cd build
 $ cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/project-toolchain-config.cmake= ..
