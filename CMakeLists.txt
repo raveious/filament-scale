@@ -23,7 +23,14 @@ add_definitions("-DGIT_BRANCH_STRING=\"${GIT_BRANCH}\"")
 
 file(GLOB SRC_FILES "src/*.c") # Load all files in src folder
 
+# Include some headers
 include_directories(include)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/scripts)
+
+# Auto-generate the backgrounds
+add_subdirectory(scripts)
 
 # Create one target
 add_avr_executable(filament-scale ${SRC_FILES})
+
+add_dependencies(filament-scale.elf filament-scale-background)

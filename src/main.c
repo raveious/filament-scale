@@ -13,8 +13,9 @@
 #include "font6x8.h"
 #include "ssd1306xled.h"
 #include "ssd1306xledtx.h"
+#include "ssd1306xledfx.h"
 
-#include "num2str.h"
+#include "background.h"
 
 #include "hx711.h"
 
@@ -87,6 +88,8 @@ int main(void)
 
 	ssd1306_clear();	// Clear the screen.
 
+	ssd1306fx_draw_bmp(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, background_data);
+
 	// NOTE: Screen width - 128, that is 21 symbols per row for the 6x8 font.
 	for (;;) {
 		if ((PINB & _BV(PB1)) != 0)
@@ -107,14 +110,14 @@ int main(void)
 		HX711_set_channel(RIGHT_CHANNEL);
 		right_reading = HX711_get_units(3);
 
-		ssd1306_setpos(0, 1);
+		ssd1306_setpos(2, 1);
 		ssd1306tx_string("L:        ");
-		ssd1306_setpos(18, 1);
+		ssd1306_setpos(20, 1);
 		ssd1306tx_numdec(left_reading);
 
-		ssd1306_setpos(64, 1);
+		ssd1306_setpos(66, 1);
 		ssd1306tx_string("R:        ");;
-		ssd1306_setpos(82, 1);
+		ssd1306_setpos(84, 1);
 		ssd1306tx_numdec(right_reading);
 
 		_delay_ms(10);

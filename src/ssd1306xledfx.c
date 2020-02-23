@@ -32,11 +32,7 @@ extern void ssd1306_stop(void);			// Finish transmission
 
 void ssd1306fx_draw_bmp(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t bitmap[]) {
 	uint16_t j = 0;
-	uint8_t y;
-	if (y1 % 8 == 0) y = y1 / 8;
-	else y = y1 / 8 + 1;
-	for (y = y0; y < y1; y++) {
-		// TODO: QUESTION - Is this correct: ssd1306_setpos() and then just ssd1306_data_byte() ???
+	for (uint8_t y = y0; y < (y1 / 8); y++) {
 		ssd1306_setpos(x0, y);
 		ssd1306_start_data();
 		for (uint8_t x = x0; x < x1; x++) {
