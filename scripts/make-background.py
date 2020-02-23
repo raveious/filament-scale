@@ -20,7 +20,7 @@ with Image.open(sys.argv[1]) as img:
 
             # Find all of the non-white pixels, and make them bytes
             for r in range(8):
-                b = b | ((not any(pix[j, i + r])) << r)
+                b = b | ((not any(pix[j, i + r][0:3])) << r)
             
             # Store the background bytes into an array
             data.append(b)
