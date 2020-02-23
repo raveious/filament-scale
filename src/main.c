@@ -110,14 +110,14 @@ int main(void)
 		HX711_set_channel(RIGHT_CHANNEL);
 		right_reading = HX711_get_units(3);
 
-		ssd1306_setpos(20, 3);
-		ssd1306tx_string("      ");
-		ssd1306_setpos(20, 3);
+		ssd1306_setpos(18, 2);
+		ssd1306tx_string("    ");
+		ssd1306_setpos(18, 2);
 		ssd1306tx_numdec(left_reading);
 
-		ssd1306_setpos(82, 2);
-		ssd1306tx_string("      ");;
-		ssd1306_setpos(82, 2);
+		ssd1306_setpos(86, 1);
+		ssd1306tx_string("    ");;
+		ssd1306_setpos(86, 1);
 		ssd1306tx_numdec(right_reading);
 
 		_delay_ms(10);
