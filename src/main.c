@@ -94,13 +94,13 @@ int main(void)
 	for (;;) {
 		if ((PINB & _BV(PB1)) != 0)
 		{
-			ssd1306_setpos(52, 3);
+			ssd1306_setpos(55, 3);
 			ssd1306tx_string("TARE");
 
 			tare(); // Tare both channels
 			
 			// Clear the "TARE" off of the screen
-			ssd1306_setpos(52, 3);
+			ssd1306_setpos(55, 3);
 			ssd1306tx_string("    ");
 		}
 
@@ -110,14 +110,14 @@ int main(void)
 		HX711_set_channel(RIGHT_CHANNEL);
 		right_reading = HX711_get_units(3);
 
-		ssd1306_setpos(2, 1);
-		ssd1306tx_string("L:        ");
-		ssd1306_setpos(20, 1);
+		ssd1306_setpos(2, 3);
+		ssd1306tx_string("L:      ");
+		ssd1306_setpos(26, 3);
 		ssd1306tx_numdec(left_reading);
 
 		ssd1306_setpos(66, 1);
-		ssd1306tx_string("R:        ");;
-		ssd1306_setpos(84, 1);
+		ssd1306tx_string("R:      ");;
+		ssd1306_setpos(90, 1);
 		ssd1306tx_numdec(right_reading);
 
 		_delay_ms(10);
